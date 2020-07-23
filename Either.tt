@@ -1,0 +1,85 @@
+<#@ template hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+// Either.cs
+
+using System;
+using System.Runtime.InteropServices;
+
+namespace Foundations.Geometry
+{
+<#
+Either("String", "Int32");
+Either("Double", "Single", "DateTime");
+#>
+}
+<#+
+void Either(params string[] names)
+{
+    var type = string.Join("Or", names);
+#>
+    [StructLayout(LayoutKind.Explicit)]
+    public struct <#= type #>
+    {
+        public static readonly <#= type #> Undefined = default;
+
+        [FieldOffset(0)]
+        private readonly int which;
+<#+
+    var which = 0;
+
+    foreach (var name in names)
+    {
+        which++;
+#>
+
+        [FieldOffset(sizeof(int))]
+        private readonly <#= name #> _<#= name #>;
+
+        public bool Is<#= name #> => which == <#= which #>;
+
+        public <#= name #> As<#= name #> => which == <#= which #> ? _<#= name #> : throw new InvalidOperationException();
+
+        public <#= type #>(<#= name #> value)
+        {
+<#+
+        foreach (var other in names)
+        {
+            if (other == name) continue;
+#>
+            _<#= other #> = default;
+<#+
+        }
+#>
+            _<#= name #> = value;
+            which = <#= which #>;
+        }
+<#+
+    }
+#>    
+        public bool IsUndefined => which == 0;
+
+        public override string ToString()
+        {
+            switch (which)
+            {
+                default:
+                    return "undefined";
+<#+
+    which = 0;
+
+    foreach (var name in names)
+    {
+#>
+
+                case <#= ++which #>:
+                    return _<#= name #>.ToString();
+<#+    
+    }
+#>
+            }
+        }
+    }
+
+<#+
+}
+#>
