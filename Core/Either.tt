@@ -1,0 +1,133 @@
+<#@ template hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+// Either.cs
+
+using System;
+using System.Runtime.InteropServices;
+
+namespace Foundations.Geometry
+{
+<#
+Either("Point", "Empty");
+Either("Line", "Point", "Empty");
+#>
+}
+<#+
+void Either(params string[] names)
+{
+    var type = string.Join("Or", names);
+#>
+    [StructLayout(LayoutKind.Explicit)]
+    public partial struct <#= type #> : IEquatable<<#=  type #>>
+    {
+        public static readonly <#= type #> Undefined = default;
+
+        public enum Option
+        {
+            Undefined, <#= string.Join(", ", names) #>,
+        }
+
+        [FieldOffset(0)]
+        public readonly Option Which;
+<#+
+    foreach (var name in names)
+    {
+#>
+
+        [FieldOffset(sizeof(int))]
+        private readonly <#= name #> _<#= name #>;
+
+        public bool Is<#= name #> => Which == Option.<#= name #>;
+
+        public <#= name #> As<#= name #> => Which == Option.<#= name #> ? _<#= name #> : throw new InvalidOperationException();
+
+        public static implicit operator <#= type #>(<#= name #> value) => new <#= type #>(value);
+
+        public <#= type #>(<#= name #> value)
+        {
+<#+
+        foreach (var other in names)
+        {
+            if (other == name) continue;
+#>
+            _<#= other #> = default;
+<#+
+        }
+#>
+            _<#= name #> = value;
+            Which = Option.<#= name #>;
+        }
+<#+
+    }
+#>    
+        public bool IsUndefined => Which == Option.Undefined;
+
+        public override string ToString()
+        {
+            switch (Which)
+            {
+                default:
+                    return Which.ToString();
+<#+
+    foreach (var name in names)
+    {
+#>
+
+                case Option.<#= name #>:
+                    return Which + " " + _<#= name #>;
+<#+    
+    }
+#>
+            }
+        }
+
+        public override bool Equals(object obj) => obj is <#= type #> other && Equals(other);
+
+        public bool Equals(<#= type #> other)
+        {
+            switch (Which)
+            {
+                default:
+                    return other.IsUndefined;
+<#+
+    foreach (var name in names)
+    {
+#>
+
+                case Option.<#= name #>:
+                    return other.Is<#= name #> && _<#= name #>.Equals(other.As<#= name #>);
+<#+    
+    }
+#>
+            }
+        }
+
+        public static bool operator ==(<#= type #> a, <#= type #> b) => a.Equals(b);
+
+        public static bool operator !=(<#= type #> a, <#= type #> b) => !a.Equals(b);
+
+        private static readonly int SessionHash = HashCode.Combine("<#= type #>", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode()
+        {
+            switch (Which)
+            {
+                default:
+                    return SessionHash;
+<#+
+    foreach (var name in names)
+    {
+#>
+
+                case Option.<#= name #>:
+                    return HashCode.Combine(_<#= name #>, SessionHash);
+<#+    
+    }
+#>
+            }
+        }
+    }
+
+<#+
+}
+#>

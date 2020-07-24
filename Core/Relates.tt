@@ -1,0 +1,72 @@
+<#@ template hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+// Relates.cs
+
+namespace Foundations.Geometry
+{
+<#
+Relates("Empty", "Point", "Line");
+Either("Point", "Empty");
+Either("Line", "Point", "Empty");
+#>
+}
+<#+
+List<string> relateNames;
+
+void Relates(params string[] names)
+{
+    relateNames = names.ToList();
+}
+
+void Either(params string[] names)
+{
+    var type = string.Join("Or", names);
+#>
+    public partial struct <#= type #>
+    {
+<#+
+    foreach (var rel in relateNames)
+    {
+#>
+        public bool Intersects(<#= rel #> other)
+        {
+            switch (Which)
+            {
+<#+
+        foreach (var name in names)
+        {
+#>
+                case Option.<#= name #>:
+<#+
+            if (relateNames.IndexOf(name) >= relateNames.IndexOf(rel))
+            {
+#>
+                    return As<#= name #>.Intersects(other);
+
+<#+    
+            }
+            else
+            {
+#>
+                    return other.Intersects(As<#= name #>);
+
+<#+
+            }
+        }
+#>
+                default:
+                    return false;
+            }
+        }
+
+<#+    
+    }
+#>
+    }
+
+<#+        
+}
+#>

@@ -1,0 +1,85 @@
+<#@ template hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Runtime" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+// DataTypes.cs
+
+using System;
+using System.Numerics;
+
+namespace Foundations.Geometry
+{
+<#
+Struct("Empty", Options.All);
+Struct("Fraction", Options.All, "BigInteger", "P", "BigInteger", "Q");
+Struct("Point", Options.All, "BigInteger", "X", "BigInteger", "Y", "BigInteger", "W");
+Struct("Vector", Options.All, "BigInteger", "X", "BigInteger", "Y", "BigInteger", "W");
+Struct("Direction", Options.All, "BigInteger", "X", "BigInteger", "Y");
+Struct("Segment", Options.All, "Point", "Source", "Point", "Target");
+Struct("Line", Options.All, "BigInteger", "A", "BigInteger", "B", "BigInteger", "C");
+Struct("Ray", Options.All, "Point", "Source", "Direction", "Direction");
+Struct("Circle", Options.All, "Point", "Center", "Fraction", "SquaredRadius");
+#>
+}
+<#+
+[Flags]
+enum Options
+{
+    Fields = 1,
+    Equals = 2,
+    HashCode = 4,
+    All = -1,
+}
+
+void Struct(string name, Options options, params string[] args)
+{
+    var fields = Enumerable.Range(0, args.Length / 2).Select(i => new KeyValuePair<string, string>(args[2 * i], args[2 * i + 1])).ToArray();
+#>
+    public partial struct <#= name #> : IEquatable<<#= name #>>
+    {
+        private <#= name #>(<#= string.Join(string.Empty, fields.Select(field => $"{field.Key} {field.Value}, ")) #>bool _)
+        {
+<#+
+    foreach (var field in fields)
+    {
+#>
+            this.<#= field.Value #> = <#= field.Value #>;
+<#+    
+    }
+#>
+        }
+
+<#+
+    foreach (var field in fields)
+    {
+#>
+        public <#= field.Key #> <#= field.Value #> { get; }
+
+<#+    
+    }
+
+    if (options.HasFlag(Options.Equals))
+    {
+#>
+        public bool Equals(<#= name #> other) => <#= fields.Any() ? string.Join(" && ", fields.Select(field => $"other.{field.Value} == {field.Value}")) : "true" #>;
+
+<#+
+    }
+#>
+        public override bool Equals(object obj) => obj is <#= name #> other && Equals(other);
+
+        private static readonly int SessionHash = HashCode.Combine("<#= name #>", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode() => <#= fields.Any() ? "HashCode.Combine(SessionHash, " + string.Join(", ", fields.Take(7).Select(field => field.Value)) + ")" : "SessionHash" #>;
+
+        public static bool operator ==(<#= name #> a, <#= name #> b) => a.Equals(b);
+
+        public static bool operator !=(<#= name #> a, <#= name #> b) => !a.Equals(b);
+    }
+
+<#+
+}
+#>
