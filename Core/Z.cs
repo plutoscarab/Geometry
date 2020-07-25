@@ -9,7 +9,7 @@ namespace Foundations.Geometry
     /// <summary>
     /// Integer.
     /// </summary>
-    public sealed class Z : GT<Z>, IEquatable<Z>
+    public sealed class Z : GT<Z>, IEquatable<Z>, IEquatable<RT<Z>>
     {
         public static readonly Z Zero = 0;
 
@@ -88,5 +88,9 @@ namespace Foundations.Geometry
         public override double ToDouble() => (double)n;
 
         public override Z Abs() => new Z(BigInteger.Abs(n));
+
+        public static bool operator ==(Z a, Z b) => a.Equals(b);
+
+        public static bool operator !=(Z a, Z b) => !a.Equals(b);
     }
 }

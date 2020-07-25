@@ -442,7 +442,7 @@ namespace Foundations.Geometry
 
         public Z D { get; }
 
-        public override bool Equals(Q other) => other.N.Equals(N) && other.D.Equals(D);
+        public bool Equals(Q other) => other.N.Equals(N) && other.D.Equals(D);
 
         public override bool Equals(object obj) => obj is Q other && Equals(other);
 

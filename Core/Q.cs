@@ -7,35 +7,35 @@ namespace Foundations.Geometry
 {
     public sealed partial class Q : FT<Q>, IEquatable<RT<Q>>
     {
-        public static readonly Q Zero = 0;
+        public static readonly Q Zero = new Q(Z.Zero, Z.One, true);
 
-        public static readonly Q One = 1;
+        public static readonly Q One = new Q(Z.One, Z.One, true);
 
-        public Q(Z p, Z q)
+        public Q(Z n, Z d)
         {
-            if (q.IsZero)
-                throw new ArgumentOutOfRangeException(nameof(q));
+            if (d.IsZero)
+                throw new ArgumentOutOfRangeException(nameof(d));
 
-            if (p.IsZero)
+            if (n.IsZero)
             {
                 N = Z.Zero;
                 D = Z.One;
                 return;
             }
 
-            if (q.Sign < 0)
+            if (d.Sign < 0)
             {
-                p = -p;
-                q = -q;
+                n = -n;
+                d = -d;
             }
             
-            if (!q.IsOne)
+            if (!d.IsOne)
             {
-                (p, q) = p.Reduce(q);
+                (n, d) = n.Reduce(d);
             }
 
-            N = p;
-            D = q;
+            N = n;
+            D = d;
         }
 
         public Q((Z N, Z D) fraction)

@@ -16,9 +16,8 @@ namespace Foundations.Geometry
             var count = 0;
             var next = DateTime.UtcNow.AddSeconds(1);
 
-            //var tasks = Enumerable.Range(0, Environment.ProcessorCount).Select(taskNum => Task.Run(() =>
+            var tasks = Enumerable.Range(0, Environment.ProcessorCount).Select(taskNum => Task.Run(() =>
             {
-                var taskNum = 0;
                 var rand = new Random();
 
                 while (true)
@@ -106,9 +105,9 @@ namespace Foundations.Geometry
                         Debugger.Break();
                     }
                 }
-            } // )).ToArray();
+            })).ToArray();
 
-            // Task.WaitAll(tasks);
+            Task.WaitAll(tasks);
         }
     }
 }
