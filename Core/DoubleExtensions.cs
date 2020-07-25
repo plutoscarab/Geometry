@@ -7,13 +7,13 @@ namespace Foundations.Geometry
 {
     public static class DoubleExtensions
     {
-        public static (BigInteger, BigInteger) ToFraction(this double d)
+        public static Q ToQ(this double d)
         {
             if (double.IsNaN(d) || double.IsInfinity(d))
                 throw new ArgumentException(nameof(d));
-                
+
             if (d == 0)
-                return (BigInteger.Zero, BigInteger.One);
+                return Q.Zero;
 
             var bits = BitConverter.DoubleToInt64Bits(d);
             var exp = (int)(bits >> 52) & 0x7FF;
@@ -48,7 +48,7 @@ namespace Foundations.Geometry
                 q = BigInteger.Pow(2, -exp);
             }
 
-            return (p, q);
+            return new Q(p, q);
         }
     }
 }

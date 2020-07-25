@@ -5,13 +5,13 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public partial struct Point : IEquatable<Point>
+    public sealed partial class Point : IEquatable<Point>
     {
         public const int Dimensions = 0;
 
         public static readonly Point Origin = new Point(0, 0);
 
-        public Point(BigInteger x, BigInteger y, BigInteger w)
+        public Point(Z x, Z y, Z w)
         {
             if (w.IsZero)
                 throw new ArgumentOutOfRangeException(nameof(w));
@@ -25,14 +25,7 @@ namespace Foundations.Geometry
 
             if (!w.IsOne)
             {
-                var g = BigInteger.GreatestCommonDivisor(w, BigInteger.GreatestCommonDivisor(x, y));
-
-                if (!g.IsOne)
-                {
-                    x /= g;
-                    y /= g;
-                    w /= g;
-                }
+                (x, y, w) = x.Reduce(y, w);
             }
             
             X = x;
@@ -41,7 +34,7 @@ namespace Foundations.Geometry
         }
 
         public Point(double x, double y)
-        : this(x.ToFraction(), y.ToFraction())
+        : this(x.ToQ(), y.ToQ())
         {
         }
 
@@ -50,12 +43,12 @@ namespace Foundations.Geometry
         {
         }
 
-        public Point(Fraction x, Fraction y)
-        : this(x.P, x.Q, y.P, y.Q)
+        public Point(Q x, Q y)
+        : this(x.N, x.D, y.N, y.D)
         {
         }
 
-        public Point(BigInteger px, BigInteger qx, BigInteger py, BigInteger qy)
+        public Point(Z px, Z qx, Z py, Z qy)
         {
             if (qx == qy)
             {
@@ -68,30 +61,27 @@ namespace Foundations.Geometry
                 py *= qx;
             }
 
-            var g = BigInteger.GreatestCommonDivisor(W, BigInteger.GreatestCommonDivisor(px, py));
-            X = px / g;
-            Y = py / g;
-            W /= g;
+            (X, Y, W) = px.Reduce(py, W);
         }
 
         public static Point operator +(Point point, Vector vector)
         {
-            var x = new Fraction(point.X, point.W) + new Fraction(vector.X, vector.W);
-            var y = new Fraction(point.Y, point.W) + new Fraction(vector.Y, vector.W);
+            var x = new Q(point.X, point.W) + new Q(vector.X, vector.W);
+            var y = new Q(point.Y, point.W) + new Q(vector.Y, vector.W);
             return new Point(x, y);
         }
 
         public static Point operator -(Point point, Vector vector)
         {
-            var x = new Fraction(point.X, point.W) - new Fraction(vector.X, vector.W);
-            var y = new Fraction(point.Y, point.W) - new Fraction(vector.Y, vector.W);
+            var x = new Q(point.X, point.W) - new Q(vector.X, vector.W);
+            var y = new Q(point.Y, point.W) - new Q(vector.Y, vector.W);
             return new Point(x, y);
         }
 
         public static Vector operator -(Point a, Point b)
         {
-            var x = new Fraction(a.X, a.W) - new Fraction(b.X, b.W);
-            var y = new Fraction(a.Y, a.W) - new Fraction(b.Y, b.W);
+            var x = new Q(a.X, a.W) - new Q(b.X, b.W);
+            var y = new Q(a.Y, a.W) - new Q(b.Y, b.W);
             return new Vector(x, y);
         }
 
@@ -103,27 +93,8 @@ namespace Foundations.Geometry
             return ((double)X / w, (double)Y / w);
         }
 
-        public bool Intersects(Empty other) => false;
+        internal bool IntersectsInternal(Point point) => Equals(point);
 
-        public bool Intersects(Point other) => Equals(other);
-
-        public PointOrEmpty Intersection(Point other) => Equals(other) ? new PointOrEmpty(this) : new PointOrEmpty(Empty.Geometry);
-
-        public bool Intersects(PointOrEmpty other)
-        {
-            switch (other.Which)
-            {
-                case PointOrEmpty.Option.Empty:
-                    return Intersects(other.AsEmpty);
-
-                case PointOrEmpty.Option.Point:
-                    return Intersects(other.AsPoint);
-
-                default:
-                    return false;
-            }
-        }
-
-        public PointOrEmpty Intersection(PointOrEmpty other) => other.IsPoint ? Intersection(other.AsPoint) : new PointOrEmpty(Empty.Geometry);
-    }
+        internal IGeometry IntersectionInternal(Point point) => Equals(point) ? (IGeometry)this : Empty.Geometry;
+   }
 }

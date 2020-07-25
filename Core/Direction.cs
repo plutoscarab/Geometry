@@ -5,11 +5,11 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public partial struct Direction : IEquatable<Direction>
+    public sealed partial class Direction : IEquatable<Direction>
     {
-        public static readonly Direction XAxis = new Direction(1d, 0d);
+        public static readonly Direction XAxis = new Direction(Z.One, Z.Zero);
 
-        public static readonly Direction YAxis = new Direction(0d, 1d);
+        public static readonly Direction YAxis = new Direction(Z.Zero, Z.One);
 
         public Direction(BigInteger x, BigInteger y)
         {
@@ -22,21 +22,21 @@ namespace Foundations.Geometry
         }
 
         public Direction(double x, double y)
-        : this(x.ToFraction(), y.ToFraction())
+        : this(x.ToQ(), y.ToQ())
         {
         }
 
-        public Direction((BigInteger P, BigInteger Q) x, (BigInteger P, BigInteger Q) y)
-        : this(x.P, x.Q, y.P, y.Q)
+        public Direction((Z N, Z D) x, (Z N, Z D) y)
+        : this(x.N, x.D, y.N, y.D)
         {
         }
 
-        public Direction(Fraction x, Fraction y)
-        : this(x.P, x.Q, y.P, y.Q)
+        public Direction(Q x, Q y)
+        : this(x.N, x.D, y.N, y.D)
         {
         }
 
-        public Direction(BigInteger px, BigInteger qx, BigInteger py, BigInteger qy)
+        public Direction(Z px, Z qx, Z py, Z qy)
         {
             if (qx.IsZero)
                 throw new ArgumentOutOfRangeException(nameof(qx));
@@ -49,9 +49,7 @@ namespace Foundations.Geometry
 
             X = px * qy;
             Y = py * qx;
-            var g = BigInteger.GreatestCommonDivisor(X, Y);
-            X /= g;
-            Y /= g;
+            (X, Y) = X.Reduce(Y);
         }
 
         public Direction(Vector vector)
@@ -87,5 +85,9 @@ namespace Foundations.Geometry
             var r = Math.Sqrt(x * x + y * y);
             return (x / r, y / r);
         }
+
+        public Direction Opposite => -this;
+
+        public static Direction operator -(Direction direction) => new Direction(-direction.X, -direction.Y, true);
     }
 }

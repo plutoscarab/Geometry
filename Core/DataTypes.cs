@@ -5,12 +5,47 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public partial struct Empty : IEquatable<Empty>
+    public enum GeometryType
+    {
+        Empty, Point, Line, Ray, Segment, Circle
+    }
+
+    public sealed partial class Empty : IEquatable<Empty>, IGeometry
     {
         private Empty(bool _)
         {
         }
 
+        public GeometryType GeometryType => GeometryType.Empty;
+
+        public bool Intersects(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectsInternal(empty);
+
+                default:
+                    return other.Intersects(this);
+            }
+        }
+
+        public IGeometry Intersection(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectionInternal(empty);
+
+                default:
+                    return other.Intersection(this);
+            }
+        }
+
+        internal bool IntersectsInternal(Empty empty) => false;
+
+        internal IGeometry IntersectionInternal(Empty empty) => Empty.Geometry;
+        
         public bool Equals(Empty other) => true;
 
         public override bool Equals(object obj) => obj is Empty other && Equals(other);
@@ -24,47 +59,58 @@ namespace Foundations.Geometry
         public static bool operator !=(Empty a, Empty b) => !a.Equals(b);
     }
 
-    public partial struct Fraction : IEquatable<Fraction>
+    public sealed partial class Point : IEquatable<Point>, IGeometry
     {
-        private Fraction(BigInteger P, BigInteger Q, bool _)
-        {
-            this.P = P;
-            this.Q = Q;
-        }
-
-        public BigInteger P { get; }
-
-        public BigInteger Q { get; }
-
-        public bool Equals(Fraction other) => other.P == P && other.Q == Q;
-
-        public override bool Equals(object obj) => obj is Fraction other && Equals(other);
-
-        private static readonly int SessionHash = HashCode.Combine("Fraction", System.Diagnostics.Stopwatch.GetTimestamp());
-
-        public override int GetHashCode() => HashCode.Combine(SessionHash, P, Q);
-
-        public static bool operator ==(Fraction a, Fraction b) => a.Equals(b);
-
-        public static bool operator !=(Fraction a, Fraction b) => !a.Equals(b);
-    }
-
-    public partial struct Point : IEquatable<Point>
-    {
-        private Point(BigInteger X, BigInteger Y, BigInteger W, bool _)
+        private Point(Z X, Z Y, Z W, bool _)
         {
             this.X = X;
             this.Y = Y;
             this.W = W;
         }
 
-        public BigInteger X { get; }
+        public GeometryType GeometryType => GeometryType.Point;
 
-        public BigInteger Y { get; }
+        public bool Intersects(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectsInternal(empty);
 
-        public BigInteger W { get; }
+                case Point point:
+                    return IntersectsInternal(point);
 
-        public bool Equals(Point other) => other.X == X && other.Y == Y && other.W == W;
+                default:
+                    return other.Intersects(this);
+            }
+        }
+
+        public IGeometry Intersection(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectionInternal(empty);
+
+                case Point point:
+                    return IntersectionInternal(point);
+
+                default:
+                    return other.Intersection(this);
+            }
+        }
+
+        internal bool IntersectsInternal(Empty empty) => false;
+
+        internal IGeometry IntersectionInternal(Empty empty) => Empty.Geometry;
+        
+        public Z X { get; }
+
+        public Z Y { get; }
+
+        public Z W { get; }
+
+        public bool Equals(Point other) => other.X.Equals(X) && other.Y.Equals(Y) && other.W.Equals(W);
 
         public override bool Equals(object obj) => obj is Point other && Equals(other);
 
@@ -77,100 +123,64 @@ namespace Foundations.Geometry
         public static bool operator !=(Point a, Point b) => !a.Equals(b);
     }
 
-    public partial struct Vector : IEquatable<Vector>
+    public sealed partial class Line : IEquatable<Line>, IGeometry
     {
-        private Vector(BigInteger X, BigInteger Y, BigInteger W, bool _)
-        {
-            this.X = X;
-            this.Y = Y;
-            this.W = W;
-        }
-
-        public BigInteger X { get; }
-
-        public BigInteger Y { get; }
-
-        public BigInteger W { get; }
-
-        public bool Equals(Vector other) => other.X == X && other.Y == Y && other.W == W;
-
-        public override bool Equals(object obj) => obj is Vector other && Equals(other);
-
-        private static readonly int SessionHash = HashCode.Combine("Vector", System.Diagnostics.Stopwatch.GetTimestamp());
-
-        public override int GetHashCode() => HashCode.Combine(SessionHash, X, Y, W);
-
-        public static bool operator ==(Vector a, Vector b) => a.Equals(b);
-
-        public static bool operator !=(Vector a, Vector b) => !a.Equals(b);
-    }
-
-    public partial struct Direction : IEquatable<Direction>
-    {
-        private Direction(BigInteger X, BigInteger Y, bool _)
-        {
-            this.X = X;
-            this.Y = Y;
-        }
-
-        public BigInteger X { get; }
-
-        public BigInteger Y { get; }
-
-        public bool Equals(Direction other) => other.X == X && other.Y == Y;
-
-        public override bool Equals(object obj) => obj is Direction other && Equals(other);
-
-        private static readonly int SessionHash = HashCode.Combine("Direction", System.Diagnostics.Stopwatch.GetTimestamp());
-
-        public override int GetHashCode() => HashCode.Combine(SessionHash, X, Y);
-
-        public static bool operator ==(Direction a, Direction b) => a.Equals(b);
-
-        public static bool operator !=(Direction a, Direction b) => !a.Equals(b);
-    }
-
-    public partial struct Segment : IEquatable<Segment>
-    {
-        private Segment(Point Source, Point Target, bool _)
-        {
-            this.Source = Source;
-            this.Target = Target;
-        }
-
-        public Point Source { get; }
-
-        public Point Target { get; }
-
-        public bool Equals(Segment other) => other.Source == Source && other.Target == Target;
-
-        public override bool Equals(object obj) => obj is Segment other && Equals(other);
-
-        private static readonly int SessionHash = HashCode.Combine("Segment", System.Diagnostics.Stopwatch.GetTimestamp());
-
-        public override int GetHashCode() => HashCode.Combine(SessionHash, Source, Target);
-
-        public static bool operator ==(Segment a, Segment b) => a.Equals(b);
-
-        public static bool operator !=(Segment a, Segment b) => !a.Equals(b);
-    }
-
-    public partial struct Line : IEquatable<Line>
-    {
-        private Line(BigInteger A, BigInteger B, BigInteger C, bool _)
+        private Line(Z A, Z B, Z C, bool _)
         {
             this.A = A;
             this.B = B;
             this.C = C;
         }
 
-        public BigInteger A { get; }
+        public GeometryType GeometryType => GeometryType.Line;
 
-        public BigInteger B { get; }
+        public bool Intersects(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectsInternal(empty);
 
-        public BigInteger C { get; }
+                case Point point:
+                    return IntersectsInternal(point);
 
-        public bool Equals(Line other) => other.A == A && other.B == B && other.C == C;
+                case Line line:
+                    return IntersectsInternal(line);
+
+                default:
+                    return other.Intersects(this);
+            }
+        }
+
+        public IGeometry Intersection(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectionInternal(empty);
+
+                case Point point:
+                    return IntersectionInternal(point);
+
+                case Line line:
+                    return IntersectionInternal(line);
+
+                default:
+                    return other.Intersection(this);
+            }
+        }
+
+        internal bool IntersectsInternal(Empty empty) => false;
+
+        internal IGeometry IntersectionInternal(Empty empty) => Empty.Geometry;
+        
+        public Z A { get; }
+
+        public Z B { get; }
+
+        public Z C { get; }
+
+        public bool Equals(Line other) => other.A.Equals(A) && other.B.Equals(B) && other.C.Equals(C);
 
         public override bool Equals(object obj) => obj is Line other && Equals(other);
 
@@ -183,7 +193,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Line a, Line b) => !a.Equals(b);
     }
 
-    public partial struct Ray : IEquatable<Ray>
+    public sealed partial class Ray : IEquatable<Ray>, IGeometry
     {
         private Ray(Point Source, Direction Direction, bool _)
         {
@@ -191,11 +201,59 @@ namespace Foundations.Geometry
             this.Direction = Direction;
         }
 
+        public GeometryType GeometryType => GeometryType.Ray;
+
+        public bool Intersects(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectsInternal(empty);
+
+                case Point point:
+                    return IntersectsInternal(point);
+
+                case Line line:
+                    return IntersectsInternal(line);
+
+                case Ray ray:
+                    return IntersectsInternal(ray);
+
+                default:
+                    return other.Intersects(this);
+            }
+        }
+
+        public IGeometry Intersection(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectionInternal(empty);
+
+                case Point point:
+                    return IntersectionInternal(point);
+
+                case Line line:
+                    return IntersectionInternal(line);
+
+                case Ray ray:
+                    return IntersectionInternal(ray);
+
+                default:
+                    return other.Intersection(this);
+            }
+        }
+
+        internal bool IntersectsInternal(Empty empty) => false;
+
+        internal IGeometry IntersectionInternal(Empty empty) => Empty.Geometry;
+        
         public Point Source { get; }
 
         public Direction Direction { get; }
 
-        public bool Equals(Ray other) => other.Source == Source && other.Direction == Direction;
+        public bool Equals(Ray other) => other.Source.Equals(Source) && other.Direction.Equals(Direction);
 
         public override bool Equals(object obj) => obj is Ray other && Equals(other);
 
@@ -208,19 +266,158 @@ namespace Foundations.Geometry
         public static bool operator !=(Ray a, Ray b) => !a.Equals(b);
     }
 
-    public partial struct Circle : IEquatable<Circle>
+    public sealed partial class Segment : IEquatable<Segment>, IGeometry
     {
-        private Circle(Point Center, Fraction SquaredRadius, bool _)
+        private Segment(Point Source, Point Target, bool _)
+        {
+            this.Source = Source;
+            this.Target = Target;
+        }
+
+        public GeometryType GeometryType => GeometryType.Segment;
+
+        public bool Intersects(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectsInternal(empty);
+
+                case Point point:
+                    return IntersectsInternal(point);
+
+                case Line line:
+                    return IntersectsInternal(line);
+
+                case Ray ray:
+                    return IntersectsInternal(ray);
+
+                case Segment segment:
+                    return IntersectsInternal(segment);
+
+                default:
+                    return other.Intersects(this);
+            }
+        }
+
+        public IGeometry Intersection(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectionInternal(empty);
+
+                case Point point:
+                    return IntersectionInternal(point);
+
+                case Line line:
+                    return IntersectionInternal(line);
+
+                case Ray ray:
+                    return IntersectionInternal(ray);
+
+                case Segment segment:
+                    return IntersectionInternal(segment);
+
+                default:
+                    return other.Intersection(this);
+            }
+        }
+
+        internal bool IntersectsInternal(Empty empty) => false;
+
+        internal IGeometry IntersectionInternal(Empty empty) => Empty.Geometry;
+        
+        public Point Source { get; }
+
+        public Point Target { get; }
+
+        public bool Equals(Segment other) => other.Source.Equals(Source) && other.Target.Equals(Target);
+
+        public override bool Equals(object obj) => obj is Segment other && Equals(other);
+
+        private static readonly int SessionHash = HashCode.Combine("Segment", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode() => HashCode.Combine(SessionHash, Source, Target);
+
+        public static bool operator ==(Segment a, Segment b) => a.Equals(b);
+
+        public static bool operator !=(Segment a, Segment b) => !a.Equals(b);
+    }
+
+    public sealed partial class Circle : IEquatable<Circle>, IGeometry
+    {
+        private Circle(Point Center, Q SquaredRadius, bool _)
         {
             this.Center = Center;
             this.SquaredRadius = SquaredRadius;
         }
 
+        public GeometryType GeometryType => GeometryType.Circle;
+
+        public bool Intersects(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectsInternal(empty);
+
+                case Point point:
+                    return IntersectsInternal(point);
+
+                case Line line:
+                    return IntersectsInternal(line);
+
+                case Ray ray:
+                    return IntersectsInternal(ray);
+
+                case Segment segment:
+                    return IntersectsInternal(segment);
+
+                case Circle circle:
+                    return IntersectsInternal(circle);
+
+                default:
+                    return other.Intersects(this);
+            }
+        }
+
+        public IGeometry Intersection(IGeometry other)
+        {
+            switch (other)
+            {
+                case Empty empty:
+                    return IntersectionInternal(empty);
+
+                case Point point:
+                    return IntersectionInternal(point);
+
+                case Line line:
+                    return IntersectionInternal(line);
+
+                case Ray ray:
+                    return IntersectionInternal(ray);
+
+                case Segment segment:
+                    return IntersectionInternal(segment);
+
+                case Circle circle:
+                    return IntersectionInternal(circle);
+
+                default:
+                    return other.Intersection(this);
+            }
+        }
+
+        internal bool IntersectsInternal(Empty empty) => false;
+
+        internal IGeometry IntersectionInternal(Empty empty) => Empty.Geometry;
+        
         public Point Center { get; }
 
-        public Fraction SquaredRadius { get; }
+        public Q SquaredRadius { get; }
 
-        public bool Equals(Circle other) => other.Center == Center && other.SquaredRadius == SquaredRadius;
+        public bool Equals(Circle other) => other.Center.Equals(Center) && other.SquaredRadius.Equals(SquaredRadius);
 
         public override bool Equals(object obj) => obj is Circle other && Equals(other);
 
@@ -233,4 +430,81 @@ namespace Foundations.Geometry
         public static bool operator !=(Circle a, Circle b) => !a.Equals(b);
     }
 
+    public sealed partial class Q : IEquatable<Q>
+    {
+        private Q(Z N, Z D, bool _)
+        {
+            this.N = N;
+            this.D = D;
+        }
+
+        public Z N { get; }
+
+        public Z D { get; }
+
+        public override bool Equals(Q other) => other.N.Equals(N) && other.D.Equals(D);
+
+        public override bool Equals(object obj) => obj is Q other && Equals(other);
+
+        private static readonly int SessionHash = HashCode.Combine("Q", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode() => HashCode.Combine(SessionHash, N, D);
+
+        public static bool operator ==(Q a, Q b) => a.Equals(b);
+
+        public static bool operator !=(Q a, Q b) => !a.Equals(b);
+    }
+
+    public sealed partial class Vector : IEquatable<Vector>
+    {
+        private Vector(Z X, Z Y, Z W, bool _)
+        {
+            this.X = X;
+            this.Y = Y;
+            this.W = W;
+        }
+
+        public Z X { get; }
+
+        public Z Y { get; }
+
+        public Z W { get; }
+
+        public bool Equals(Vector other) => other.X.Equals(X) && other.Y.Equals(Y) && other.W.Equals(W);
+
+        public override bool Equals(object obj) => obj is Vector other && Equals(other);
+
+        private static readonly int SessionHash = HashCode.Combine("Vector", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode() => HashCode.Combine(SessionHash, X, Y, W);
+
+        public static bool operator ==(Vector a, Vector b) => a.Equals(b);
+
+        public static bool operator !=(Vector a, Vector b) => !a.Equals(b);
+    }
+
+    public sealed partial class Direction : IEquatable<Direction>
+    {
+        private Direction(Z X, Z Y, bool _)
+        {
+            this.X = X;
+            this.Y = Y;
+        }
+
+        public Z X { get; }
+
+        public Z Y { get; }
+
+        public bool Equals(Direction other) => other.X.Equals(X) && other.Y.Equals(Y);
+
+        public override bool Equals(object obj) => obj is Direction other && Equals(other);
+
+        private static readonly int SessionHash = HashCode.Combine("Direction", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode() => HashCode.Combine(SessionHash, X, Y);
+
+        public static bool operator ==(Direction a, Direction b) => a.Equals(b);
+
+        public static bool operator !=(Direction a, Direction b) => !a.Equals(b);
+    }
 }

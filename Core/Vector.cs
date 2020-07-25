@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public partial struct Vector
+    public sealed partial class Vector
     {
         public static readonly Vector Zero = new Vector(0, 0);
         
@@ -13,7 +13,7 @@ namespace Foundations.Geometry
 
         public static readonly Vector YAxis = new Vector(0, 1);
 
-        public Vector(BigInteger x, BigInteger y, BigInteger w)
+        public Vector(Z x, Z y, Z w)
         {
             if (w.IsZero)
                 throw new ArgumentOutOfRangeException(nameof(w));
@@ -27,14 +27,7 @@ namespace Foundations.Geometry
 
             if (!w.IsOne)
             {
-                var g = BigInteger.GreatestCommonDivisor(w, BigInteger.GreatestCommonDivisor(x, y));
-
-                if (!g.IsOne)
-                {
-                    x /= g;
-                    y /= g;
-                    w /= g;
-                }
+                (x, y, w) = x.Reduce(y, w);
             }
             
             X = x;
@@ -43,7 +36,7 @@ namespace Foundations.Geometry
         }
 
         public Vector(double x, double y)
-        : this(x.ToFraction(), y.ToFraction())
+        : this(x.ToQ(), y.ToQ())
         {
         }
 
@@ -52,12 +45,12 @@ namespace Foundations.Geometry
         {
         }
 
-        public Vector(Fraction x, Fraction y)
-        : this(x.P, x.Q, y.P, y.Q)
+        public Vector(Q x, Q y)
+        : this(x.N, x.D, y.N, y.D)
         {
         }
 
-        public Vector(BigInteger px, BigInteger qx, BigInteger py, BigInteger qy)
+        public Vector(Z px, Z qx, Z py, Z qy)
         {
             var p = new Point(px, qx, py, qy);
             X = p.X;
@@ -90,19 +83,19 @@ namespace Foundations.Geometry
         {
         }
 
-        public Fraction SquaredLength() => new Fraction(X * X + Y * Y, W * W);
+        public Q SquaredLength() => new Q(X * X + Y * Y, W * W);
 
         public static Vector operator +(Vector a, Vector b)
         {
-            var x = new Fraction(a.X, a.W) + new Fraction(b.X, b.W);
-            var y = new Fraction(a.Y, a.W) + new Fraction(b.Y, b.W);
+            var x = new Q(a.X, a.W) + new Q(b.X, b.W);
+            var y = new Q(a.Y, a.W) + new Q(b.Y, b.W);
             return new Vector(x, y);
         }
 
         public static Vector operator -(Vector a, Vector b)
         {
-            var x = new Fraction(a.X, a.W) - new Fraction(b.X, b.W);
-            var y = new Fraction(a.Y, a.W) - new Fraction(b.Y, b.W);
+            var x = new Q(a.X, a.W) - new Q(b.X, b.W);
+            var y = new Q(a.Y, a.W) - new Q(b.Y, b.W);
             return new Vector(x, y);
         }
 
@@ -114,10 +107,10 @@ namespace Foundations.Geometry
             return ((double)X / w, (double)Y / w);
         }
 
-        public static Vector operator *(Vector vector, Fraction scalar) => new Vector(vector.X * scalar.P, vector.Y * scalar.P, vector.W * scalar.Q);
+        public static Vector operator *(Vector vector, Q scalar) => new Vector(vector.X * scalar.N, vector.Y * scalar.N, vector.W * scalar.D);
 
-        public static Vector operator /(Vector vector, Fraction scalar) => new Vector(vector.X * scalar.Q, vector.Y * scalar.Q, vector.W * scalar.P);
+        public static Vector operator /(Vector vector, Q scalar) => new Vector(vector.X * scalar.D, vector.Y * scalar.D, vector.W * scalar.N);
 
-        public static Vector operator *(Fraction scalar, Vector vector) => new Vector(vector.X * scalar.P, vector.Y * scalar.P, vector.W * scalar.Q);   
+        public static Vector operator *(Q scalar, Vector vector) => new Vector(vector.X * scalar.N, vector.Y * scalar.N, vector.W * scalar.D);   
     }
 }

@@ -8,8 +8,6 @@ using System.Runtime.InteropServices;
 namespace Foundations.Geometry
 {
 <#
-Either("Point", "Empty");
-Either("Line", "Point", "Empty");
 #>
 }
 <#+

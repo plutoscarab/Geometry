@@ -5,30 +5,26 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public partial struct Line
+    public sealed partial class Line
     {
         public const int Dimensions = 1;
 
         /// <summary>
         /// ax + by + c = 0
         /// </summary>
-        public Line(BigInteger a, BigInteger b, BigInteger c)
+        public Line(Z a, Z b, Z c)
         {
             if (a.IsZero && b.IsZero)
                 throw new ArgumentException("Either a or b must be non-zero.");
 
-            var g = BigInteger.GreatestCommonDivisor(a, BigInteger.GreatestCommonDivisor(b, c));
-
-            A = a / g;
-            B = b / g;
-            C = c / g;
+            (A, B, C) = a.Reduce(b, c);
         }
 
         /// <summary>
         /// ax + by + c = 0
         /// <summary>
-        public Line(Fraction a, Fraction b, Fraction c)
-        : this(a.P * b.Q * c.Q, a.Q * b.P * c.Q, a.Q * b.Q * c.Q)
+        public Line(Q a, Q b, Q c)
+        : this(a.N * b.D * c.D, a.D * b.N * c.D, a.D * b.D * c.D)
         {
         }
 
@@ -67,7 +63,7 @@ namespace Foundations.Geometry
             {
                 if (!A.IsOne)
                 {
-                    if (A == BigInteger.MinusOne)
+                    if ((-A).IsOne)
                     {
                         s.Append("-");
                     }
@@ -85,7 +81,7 @@ namespace Foundations.Geometry
                 {
                     if (!B.IsOne)
                     {
-                        if (B == BigInteger.MinusOne)
+                        if ((-B).IsOne)
                         {
                             s.Append("-");
                         }
@@ -100,9 +96,9 @@ namespace Foundations.Geometry
                     s.Append(" ");
                     s.Append(B.Sign > 0 ? "+ " : "- ");
 
-                    if (!B.IsOne && B != BigInteger.MinusOne)
+                    if (!B.IsOne && !(-B).IsOne)
                     {
-                        s.Append(BigInteger.Abs(B));
+                        s.Append(B.Abs());
                     }
                 }
 
@@ -119,7 +115,7 @@ namespace Foundations.Geometry
                 {
                     s.Append(" ");
                     s.Append(C.Sign > 0 ? "+ " : "- ");
-                    s.Append(BigInteger.Abs(C));
+                    s.Append(C.Abs());
                 }
             }
 
@@ -133,32 +129,35 @@ namespace Foundations.Geometry
 
         public bool IntersectsOrigin => C.IsZero;
 
-        public bool Intersects(Empty empty) => false;
+        internal bool IntersectsInternal(Point point) => (point.X * A + point.Y * B + point.W * C).IsZero;
 
-        public bool Intersects(Point point) => (point.X * A + point.Y * B + point.W * C).IsZero;
+        internal IGeometry IntersectionInternal(Point point) => Intersects(point) ? (IGeometry)point : Empty.Geometry;
 
-        public PointOrEmpty Intersection(Point point) => Intersects(point) ? point : new PointOrEmpty(Empty.Geometry);
+        internal bool IntersectsInternal(Line line) => (Direction != line.Direction && Direction.Opposite != line.Direction) || C == line.C;
 
-        public bool Intersects(PointOrEmpty g)
+        internal IGeometry IntersectionInternal(Line line)
         {
-            switch (g.Which)
+            // Lines are coincident?
+            if (this == line || this == line.Opposite)
             {
-                case PointOrEmpty.Option.Empty:
-                    return Intersects(g.AsEmpty);
-
-                case PointOrEmpty.Option.Point:
-                    return Intersects(g.AsPoint);
-
-                default:
-                    return false;
+                return this;
             }
+
+            // Lines are parallel?
+            var d = A * line.B - B * line.A;
+
+            if (d.IsZero)
+            {
+                return Empty.Geometry;
+            }
+
+            // Lines intersect at point.
+            var x = new Q(B * line.C - C * line.B, d);
+            var y = new Q(C * line.A - A * line.C, d);
+            return new Point(x, y);
         }
 
-        public PointOrEmpty Intersection(PointOrEmpty g) => Intersects(g) ? g : new PointOrEmpty(Empty.Geometry);
-
-        public bool Intersects(Line other) => Direction != other.Direction || C == other.C;
-
-        public Point Point(Fraction t)
+        public Point Point(Q t)
         {
             var d = A * A + B * B;
             var center = new Point(-A * C, -B * C, d);
