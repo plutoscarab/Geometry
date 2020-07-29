@@ -22,7 +22,6 @@ Class("Ray", Options.All, "Point", "Source", "Direction", "Direction");
 Class("Segment", Options.All, "Point", "Source", "Point", "Target");
 Class("Circle", Options.All, "Point", "Center", "Q", "SquaredRadius");
 
-Class("Q", Options.All, "Z", "N", "Z", "D");
 Class("Vector", Options.All, "Z", "X", "Z", "Y", "Z", "W");
 Class("Direction", Options.All, "Z", "X", "Z", "Y");
 #>

@@ -9,7 +9,7 @@ namespace Foundations.Geometry
     /// <summary>
     /// Integral domain.
     /// </summary>
-    public abstract class RT<T> where T : RT<T>, IEquatable<T>
+    public abstract class RT<T> where T : RT<T>
     {
         protected abstract T Add(T other);
 

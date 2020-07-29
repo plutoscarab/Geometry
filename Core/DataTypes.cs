@@ -430,31 +430,6 @@ namespace Foundations.Geometry
         public static bool operator !=(Circle a, Circle b) => !a.Equals(b);
     }
 
-    public sealed partial class Q : IEquatable<Q>
-    {
-        private Q(Z N, Z D, bool _)
-        {
-            this.N = N;
-            this.D = D;
-        }
-
-        public Z N { get; }
-
-        public Z D { get; }
-
-        public bool Equals(Q other) => other.N.Equals(N) && other.D.Equals(D);
-
-        public override bool Equals(object obj) => obj is Q other && Equals(other);
-
-        private static readonly int SessionHash = HashCode.Combine("Q", System.Diagnostics.Stopwatch.GetTimestamp());
-
-        public override int GetHashCode() => HashCode.Combine(SessionHash, N, D);
-
-        public static bool operator ==(Q a, Q b) => a.Equals(b);
-
-        public static bool operator !=(Q a, Q b) => !a.Equals(b);
-    }
-
     public sealed partial class Vector : IEquatable<Vector>
     {
         private Vector(Z X, Z Y, Z W, bool _)

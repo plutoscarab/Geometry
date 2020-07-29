@@ -1,11 +1,11 @@
 // Q.cs
 
 using System;
-using System.Numerics;
+using System.Diagnostics;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Q : FT<Q>, IEquatable<RT<Q>>
+    public sealed partial class Q : FT<Q>
     {
         public static readonly Q Zero = new Q(Z.Zero, Z.One, true);
 
@@ -53,6 +53,46 @@ namespace Foundations.Geometry
         {
         }
 
+        private Q(Z N, Z D, bool _)
+        {
+            this.N = N;
+            this.D = D;
+        }
+
+        public Z N { get; }
+
+        public Z D { get; }
+
+        public override bool Equals(object obj) => throw new InvalidOperationException($"Values of type {nameof(Q)} cannot be compared for semantic equality.");
+
+        private static readonly int SessionHash = HashCode.Combine("Q", System.Diagnostics.Stopwatch.GetTimestamp());
+
+        public override int GetHashCode() => HashCode.Combine(SessionHash, N, D);
+
+        static bool warn = true;
+
+        public static bool operator ==(Q a, Q b)
+        {
+            if (warn)
+            {
+                warn = false;
+
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+
+                if (System.Diagnostics.Debugger.IsLogging())
+                {
+                    Debug.WriteLine($"Values of type {nameof(Q)} should not be compared for equality. Only use this operator for reference equality.");
+                }
+            }
+
+            return ReferenceEquals(a, b);
+        }
+
+        public static bool operator !=(Q a, Q b) => !(a == b);
+    
         public override bool IsZero => N.IsZero;
 
         public override bool IsOne => N.IsOne && D.IsOne;
