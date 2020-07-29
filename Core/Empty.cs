@@ -2,12 +2,8 @@
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Empty
+    public partial struct Empty
     {
         public static readonly Empty Geometry = new Empty();
-
-        private Empty()
-        {
-        }
     }
 }

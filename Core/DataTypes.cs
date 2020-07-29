@@ -1,7 +1,6 @@
 // DataTypes.cs
 
 using System;
-using System.Numerics;
 
 namespace Foundations.Geometry
 {
@@ -10,7 +9,7 @@ namespace Foundations.Geometry
         Empty, Point, Line, Ray, Segment, Circle
     }
 
-    public sealed partial class Empty : IEquatable<Empty>, IGeometry
+    public partial struct Empty : IEquatable<Empty>, IGeometry
     {
         private Empty(bool _)
         {
@@ -59,7 +58,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Empty a, Empty b) => !a.Equals(b);
     }
 
-    public sealed partial class Point : IEquatable<Point>, IGeometry
+    public partial struct Point : IEquatable<Point>, IGeometry
     {
         private Point(Z X, Z Y, Z W, bool _)
         {
@@ -123,7 +122,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Point a, Point b) => !a.Equals(b);
     }
 
-    public sealed partial class Line : IEquatable<Line>, IGeometry
+    public partial struct Line : IEquatable<Line>, IGeometry
     {
         private Line(Z A, Z B, Z C, bool _)
         {
@@ -193,7 +192,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Line a, Line b) => !a.Equals(b);
     }
 
-    public sealed partial class Ray : IEquatable<Ray>, IGeometry
+    public partial struct Ray : IEquatable<Ray>, IGeometry
     {
         private Ray(Point Source, Direction Direction, bool _)
         {
@@ -266,7 +265,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Ray a, Ray b) => !a.Equals(b);
     }
 
-    public sealed partial class Segment : IEquatable<Segment>, IGeometry
+    public partial struct Segment : IEquatable<Segment>, IGeometry
     {
         private Segment(Point Source, Point Target, bool _)
         {
@@ -345,7 +344,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Segment a, Segment b) => !a.Equals(b);
     }
 
-    public sealed partial class Circle : IEquatable<Circle>, IGeometry
+    public partial struct Circle : IEquatable<Circle>, IGeometry
     {
         private Circle(Point Center, Q SquaredRadius, bool _)
         {
@@ -430,7 +429,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Circle a, Circle b) => !a.Equals(b);
     }
 
-    public sealed partial class Vector : IEquatable<Vector>
+    public partial struct Vector : IEquatable<Vector>
     {
         private Vector(Z X, Z Y, Z W, bool _)
         {
@@ -458,7 +457,7 @@ namespace Foundations.Geometry
         public static bool operator !=(Vector a, Vector b) => !a.Equals(b);
     }
 
-    public sealed partial class Direction : IEquatable<Direction>
+    public partial struct Direction : IEquatable<Direction>
     {
         private Direction(Z X, Z Y, bool _)
         {

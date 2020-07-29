@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Point : IEquatable<Point>
+    public partial struct Point : IEquatable<Point>
     {
         public const int Dimensions = 0;
 

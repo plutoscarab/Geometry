@@ -4,7 +4,7 @@ using System;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Circle
+    public partial struct Circle
     {
         internal bool IntersectsInternal(Point point) => throw new NotImplementedException();
 

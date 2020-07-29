@@ -4,11 +4,26 @@ using System;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Ray
+    public partial struct Ray
     {
-        internal bool IntersectsInternal(Point point) => throw new NotImplementedException();
+        public Ray(Point source, Direction direction)
+        : this(source, direction, true)
+        {
+        }
 
-        internal IGeometry IntersectionInternal(Point point) => throw new NotImplementedException();
+        public Ray(Point source, Point other)
+        : this(source, other - source)
+        {
+        }
+
+        public Ray(Point source, Vector vector)
+        : this(source, vector.Direction)
+        {
+        }
+
+        internal bool IntersectsInternal(Point point) => point == Source || (point - Source).Direction == Direction;
+
+        internal IGeometry IntersectionInternal(Point point) => IntersectsInternal(point) ? (IGeometry)point : Empty.Geometry;
         
         internal bool IntersectsInternal(Line line) => throw new NotImplementedException();
 

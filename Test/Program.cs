@@ -13,7 +13,7 @@ namespace Foundations.Geometry
 
         static void Main(string[] args)
         {
-            var count = 0;
+            var count = 0L;
             var next = DateTime.UtcNow.AddSeconds(1);
 
             var tasks = Enumerable.Range(0, Environment.ProcessorCount).Select(taskNum => Task.Run(() =>
@@ -98,6 +98,38 @@ namespace Foundations.Geometry
                         // Verify that the point is on the opposite side.
                         var side2 = opp.Side(r);
                         Debug.Assert(side * side2 == -1);
+
+                        // Make a second line.
+                        var s = new Point(NextNormal(rand), NextNormal(rand));
+                        var line2 = new Line(r, s);
+
+                        // Get intersection of the two lines.
+                        var ipt = line.Intersection(line2);
+                        Debug.Assert(ipt is Point pt);
+
+                        // Verify that point is on both lines.
+                        Debug.Assert(line.Intersects(pt));
+                        Debug.Assert(line2.Intersects(pt));
+
+                        // Make a ray.
+                        var ray = new Ray(p, q);
+
+                        // Pick a point on the ray.
+                        var t = Math.Abs(NextNormal(rand));
+                        r = ray.Source + new Vector(ray.Direction) * t;
+
+                        // Verify that it is on the ray.
+                        Debug.Assert(ray.Intersects(r));
+                        Debug.Assert(r.Intersects(ray));
+
+                        // Pick a point in the opposite direction.
+                        r = ray.Source - new Vector(ray.Direction) * t;
+
+                        // Verify that it is not on the ray.
+                        Debug.Assert(!ray.Intersects(r));
+
+                        // Verify that a random point is not on the ray.
+                        Debug.Assert(!ray.Intersects(line2.Point(0)));
                     }
                     catch (Exception ex)
                     {

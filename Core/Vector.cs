@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Vector
+    public partial struct Vector
     {
         public static readonly Vector Zero = new Vector(0, 0);
         
@@ -106,6 +106,8 @@ namespace Foundations.Geometry
             var w = (double)W;
             return ((double)X / w, (double)Y / w);
         }
+
+        public Direction Direction => new Direction(this);
 
         public static Vector operator *(Vector vector, Q scalar) => new Vector(vector.X * scalar.N, vector.Y * scalar.N, vector.W * scalar.D);
 

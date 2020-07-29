@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Line
+    public partial struct Line
     {
         public const int Dimensions = 1;
 

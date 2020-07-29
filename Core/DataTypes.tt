@@ -8,7 +8,6 @@
 // DataTypes.cs
 
 using System;
-using System.Numerics;
 
 namespace Foundations.Geometry
 {
@@ -56,7 +55,7 @@ void Class(string name, Options options, params string[] args)
     var fields = Enumerable.Range(0, args.Length / 2).Select(i => new KeyValuePair<string, string>(args[2 * i], args[2 * i + 1])).ToArray();
 #>
 
-    public sealed partial class <#= name #> : IEquatable<<#= name #>><#= geometryTypes.Contains(name) ? ", IGeometry" : string.Empty #>
+    public partial struct <#= name #> : IEquatable<<#= name #>><#= geometryTypes.Contains(name) ? ", IGeometry" : string.Empty #>
     {
         private <#= generic #>(<#= string.Join(string.Empty, fields.Select(field => $"{field.Key} {field.Value}, ")) #>bool _)
         {

@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Foundations.Geometry
 {
-    public sealed partial class Direction : IEquatable<Direction>
+    public partial struct Direction : IEquatable<Direction>
     {
         public static readonly Direction XAxis = new Direction(Z.One, Z.Zero);
 
